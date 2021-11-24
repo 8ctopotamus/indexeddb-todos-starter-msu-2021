@@ -5,6 +5,10 @@ document.addEventListener('DOMContentLoaded', (e) => {
     return
   }
 
+  const form = document.getElementById('todo-form')
+  const newTodoInput = document.querySelector('input.new-item')
+  const todoListSpan = document.querySelector('.todo-container')
+
   // request to open database
   let db
 
@@ -22,16 +26,21 @@ document.addEventListener('DOMContentLoaded', (e) => {
   request.onsuccess = event => {
     db = event.target.result
     console.log(`Successfully opened ${db.name}!`)
+    getTodos()
   }
 
-  const form = document.getElementById('todo-form')
-  const newTodoInput = document.querySelector('input.new-item')
-  const todoListSpan = document.querySelector('.todo-container')
+  const getStore = (storeName, mode = 'readwrite') => {
+    const transaction = db.transaction([storeName], mode)
+    const store = transaction.objectStore(storeName)
+    return store
+  }
 
   const getTodos = () => {
-    // fetch('/api/todos')
-    //   .then(response => response.json())
-    //   .then(todos => renderTodoList(todos))
+    const store = getStore('todos', 'readonly')
+    const todosRequest = store.getAll()
+    todosRequest.onsuccess = event => {
+      renderTodoList(event.target.result)
+    }
   }
 
   const renderTodoList = todos => {
@@ -54,13 +63,9 @@ document.addEventListener('DOMContentLoaded', (e) => {
       text,
       complete: false,
     }
-
-    const transaction = db.transaction(['todos'], 'readwrite')
-    const store = transaction.objectStore('todos')
-
+    const store = getStore('todos')
     store.add(newTodo)
   })
-
 
   const deleteTodo = id => {
     // fetch(`/api/todos/${id}`, {
@@ -121,5 +126,4 @@ document.addEventListener('DOMContentLoaded', (e) => {
     }
   }, true)
 
-  getTodos()
 });
