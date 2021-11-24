@@ -68,11 +68,10 @@ document.addEventListener('DOMContentLoaded', (e) => {
   })
 
   const deleteTodo = id => {
-    // fetch(`/api/todos/${id}`, {
-    //   method: 'DELETE'
-    // })
-    //   .then(getTodos)
-    //   .catch(err => console.error(err))
+    const parsedId = parseInt(id)
+    const store = getStore('todos', 'readwrite')
+    const deleteRequest = store.delete(parsedId)
+    deleteRequest.onsuccess = () => getTodos()
   }
 
   const updateTodo = newTodo => {
