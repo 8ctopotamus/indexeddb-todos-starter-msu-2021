@@ -1,4 +1,28 @@
 document.addEventListener('DOMContentLoaded', (e) => {
+  // check if exists
+  if (!window.indexedDB) {
+    console.log("Your browser doesn't support a stable version of IndexedDB. Such and such feature will not be available.");
+    return
+  }
+
+  // request to open database
+  let db
+
+  const request = indexedDB.open('todos_db', 1)
+  
+  request.onupgradeneeded = event => {
+    const db = event.target.result
+    const objectStore = db.createObjectStore('todos', {
+      keyPath: 'id',
+      autoIncrement: true
+    })
+    objectStore.createIndex('complete', 'complete')
+  }
+
+  request.onsuccess = event => {
+    db = event.target.result
+    console.log(`Successfully opened ${db.name}!`)
+  }
 
   const form = document.getElementById('todo-form')
   const newTodoInput = document.querySelector('input.new-item')
@@ -26,15 +50,15 @@ document.addEventListener('DOMContentLoaded', (e) => {
   form.addEventListener('submit', e => {
     e.preventDefault()
     const text = newTodoInput.value
-    // fetch('/api/todos', {
-    //   method: 'POST',
-    //   body: JSON.stringify({ text }),
-    //   headers: {
-    //     'Content-Type': 'application/json'
-    //   }
-    // })
-    //   .then(getTodos)
-    //   .catch(err => console.error(err))
+    const newTodo = {
+      text,
+      complete: false,
+    }
+
+    const transaction = db.transaction(['todos'], 'readwrite')
+    const store = transaction.objectStore('todos')
+
+    store.add(newTodo)
   })
 
 
