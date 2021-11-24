@@ -64,7 +64,8 @@ document.addEventListener('DOMContentLoaded', (e) => {
       complete: false,
     }
     const store = getStore('todos')
-    store.add(newTodo)
+    const addRequest = store.add(newTodo)
+    addRequest.onsuccess = () => getTodos()
   })
 
   const deleteTodo = id => {
@@ -75,16 +76,13 @@ document.addEventListener('DOMContentLoaded', (e) => {
   }
 
   const updateTodo = newTodo => {
-    // fetch(`/api/todos/${newTodo.id}`, {
-    //   method: 'PUT',
-    //   headers: {
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify(newTodo)
-    // })
-    //   .then(getTodos)
-    //   .catch(err => console.error(err))
-  }
+    newTodo.id = parseInt(newTodo.id)
+    console.log(newTodo)
+
+    const store = getStore('todos')
+    const putRequest = store.put(newTodo)
+    putRequest.onsuccess = () => getTodos()
+ }
 
   todoListSpan.addEventListener('click', e => {
     const target = e.target
@@ -93,8 +91,10 @@ document.addEventListener('DOMContentLoaded', (e) => {
       deleteTodo(id)
     } else if (target.matches('.complete')) {
       const complete = JSON.parse(target.getAttribute('data-complete'))
+      const text = target.parentElement.querySelector('span').innerText
       const newTodo = {
         id,
+        text,
         complete: !complete
       }
       updateTodo(newTodo)
